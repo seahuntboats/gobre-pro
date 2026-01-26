@@ -6,6 +6,8 @@ RUN apk --no-cache add openjdk11 bash libreoffice util-linux \
   rm -rf /var/cache/apk/*
 
 WORKDIR /app
+RUN mkdir /.cache
+RUN chmod -R 777 /.cache
 RUN mkdir -p /app
 
 COPY . .
