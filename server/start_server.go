@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"time"
 
 	lo "main/libreoffice"
 	proto "main/proto/gobre"
@@ -39,6 +40,20 @@ func (s GobreServer) HandleFileRequest(
 }
 
 func StartServer(ctx context.Context) {
+	for {
+		select {
+		case <-ctx.Done():
+			fmt.Println("Context cancelled, stopping server...")
+			return
+		default:
+			runServer(ctx)
+			fmt.Println("Server stopped, restarting in 5 seconds...")
+			time.Sleep(5 * time.Second)
+		}
+	}
+}
+
+func runServer(ctx context.Context) {
 	fmt.Println("Starting gRPC server on port :8081")
 	listener, listenError := net.Listen("tcp", ":8081")
 	if listenError != nil {
@@ -58,7 +73,7 @@ func StartServer(ctx context.Context) {
 		fmt.Println("gRPC server is running...")
 		<-ctx.Done()
 		fmt.Println("Shutting down gRPC server...")
-		server.Stop()
+		server.GracefulStop()
 		fmt.Println("gRPC server shut down complete.")
 	}()
 
